@@ -1,0 +1,159 @@
+- id: m01w03d01
+  title: "Docker: containeriza tu ETL"
+  description: "Crea un Dockerfile para main_etl.py. Multi-stage build: stage 1 instala deps, stage 2 copia solo lo necesario. Construye la imagen y córrela localmente. Debe producir el mismo output que sin Docker."
+  type: daily
+  xp: 85
+  skill: gcp_cloud
+  duration_min: 30
+  month: 1
+  week: 3
+  day: 1
+  requires: m01w02_boss
+  acceptance: "docker build y docker run producen el reporte de ETL correctamente."
+  output: "projects/01_data_engineering/Dockerfile"
+
+- id: m01w03d02
+  title: "Cloud Run: despliega tu primer servicio"
+  description: "Convierte tu pipeline en una API mínima con FastAPI: un endpoint POST /process que recibe un JSON con contactos y devuelve los limpios. Containeriza y despliega en Cloud Run. Prueba con curl."
+  type: daily
+  xp: 95
+  skill: gcp_cloud
+  duration_min: 30
+  month: 1
+  week: 3
+  day: 2
+  requires: m01w03d01
+  acceptance: "Servicio corriendo en Cloud Run. curl al endpoint devuelve contactos procesados."
+  output: "projects/01_data_engineering/api_service.py"
+
+- id: m01w03d03
+  title: "CI: GitHub Actions básico"
+  description: "Crea .github/workflows/ci.yml que: 1) Se active en push a main, 2) Instale Python 3.11, 3) Instale dependencias, 4) Corra pytest, 5) Corra ruff check. Debe pasar en verde."
+  type: daily
+  xp: 80
+  skill: gcp_cloud
+  duration_min: 25
+  month: 1
+  week: 3
+  day: 3
+  acceptance: "GitHub Actions corre en verde. Badge visible en README."
+  output: ".github/workflows/ci.yml"
+
+- id: m01w03d04
+  title: "Prompt Dojo: diseña una arquitectura con IA"
+  description: "Usa Claude/ChatGPT para diseñar la arquitectura de un sistema de cobranza. Escribe 3 prompts progresivos: 1) Pide diseño general, 2) Pide que compare 2 alternativas con trade-offs, 3) Pide diagrama ASCII. Evalúa cada respuesta: ¿fue útil? ¿qué faltó? ¿cómo mejorarías el prompt?"
+  type: daily
+  xp: 70
+  skill: rag_llm
+  duration_min: 25
+  month: 1
+  week: 3
+  day: 4
+  acceptance: "Documento con 3 prompts, 3 respuestas (resumen), y evaluación de cada una."
+  output: "docs/prompt_training/02_architecture_design.md"
+
+- id: m01w03d05
+  title: "Costos Cloud Run: entiende el pricing"
+  description: "Lee la página de pricing de Cloud Run. Calcula: ¿cuánto costaría procesar 1000 requests/día con tu servicio? Documenta: CPU allocation, memory, request timeout, concurrency, y min/max instances. Configura un budget alert de $5."
+  type: daily
+  xp: 65
+  skill: finops_security
+  duration_min: 20
+  month: 1
+  week: 3
+  day: 5
+  acceptance: "Documento con cálculo de costos y screenshot del budget alert configurado."
+  output: "docs/notes/cloud_run_pricing.md"
+
+- id: m01w03_boss
+  title: "BOSS: API de procesamiento en Cloud Run con CI/CD"
+  description: "Mejora tu servicio: 1) Agrega endpoint GET /health, 2) Agrega logging estructurado, 3) Configura min-instances=0, max-instances=2, concurrency=80, 4) Agrega CI/CD: GitHub Actions que buildee la imagen y la despliegue a Cloud Run en cada push a main, 5) Documenta la arquitectura en un ADR."
+  type: boss
+  xp: 450
+  skill: gcp_cloud
+  duration_min: 120
+  month: 1
+  week: 3
+  requires: m01w03d05
+  acceptance: "Push a main triggerea deploy automático a Cloud Run. Endpoint /health responde. Logs visibles en Cloud Logging. ADR documenta decisiones."
+  output: "projects/01_data_engineering/api_service.py + .github/workflows/deploy.yml + docs/adr/001-cloud-run-api.md"
+
+- id: m01w04d01
+  title: "Terraform: infraestructura como código"
+  description: "Escribe un main.tf que cree: 1 bucket de Storage, 1 dataset de BigQuery, y 1 service account. Corre terraform plan (sin apply todavía). Documenta cada recurso."
+  type: daily
+  xp: 85
+  skill: gcp_cloud
+  duration_min: 30
+  month: 1
+  week: 4
+  day: 1
+  acceptance: "terraform plan muestra 3 recursos a crear sin errores."
+  output: "infra/main.tf + infra/variables.tf"
+
+- id: m01w04d02
+  title: "Terraform apply: materializa la infra"
+  description: "Corre terraform apply y verifica que los recursos existan en GCP Console. Agrega el state file a .gitignore (nunca versionarlo). Crea un terraform destroy plan y guárdalo."
+  type: daily
+  xp: 70
+  skill: gcp_cloud
+  duration_min: 20
+  month: 1
+  week: 4
+  day: 2
+  requires: m01w04d01
+  acceptance: "Recursos visibles en GCP. State file en .gitignore. Comando destroy documentado."
+  output: "infra/main.tf (actualizado) + .gitignore (actualizado)"
+
+- id: m01w04d03
+  title: "Data quality: valida antes de cargar"
+  description: "Escribe un módulo data_quality.py con funciones que: 1) Detecten duplicados por teléfono, 2) Detecten valores nulos en campos obligatorios, 3) Detecten montos negativos o absurdos (>100M), 4) Generen un reporte de calidad en JSON. Incluye tests."
+  type: daily
+  xp: 85
+  skill: data_engineering
+  duration_min: 30
+  month: 1
+  week: 4
+  day: 3
+  acceptance: "data_quality.py con 4 checks. Tests pasan. Reporte de calidad generado."
+  output: "projects/01_data_engineering/data_quality.py + tests/test_data_quality.py"
+
+- id: m01w04d04
+  title: "Escribir un README profesional"
+  description: "Reescribe el README de tu proyecto 01_data_engineering con: descripción, arquitectura (diagrama ASCII), setup instructions, cómo correr, cómo testear, decisiones técnicas (1 párrafo). Sigue el template de docs/TEMPLATES/."
+  type: daily
+  xp: 60
+  skill: leadership
+  duration_min: 20
+  month: 1
+  week: 4
+  day: 4
+  acceptance: "README con todas las secciones. Un humano puede clonar y correr el proyecto solo leyendo el README."
+  output: "projects/01_data_engineering/README.md"
+
+- id: m01w04d05
+  title: "Security: OWASP Top 10 para APIs"
+  description: "Lee el resumen de OWASP API Security Top 10. Para tu API de Cloud Run, identifica 3 riesgos que aplican y escribe 1 mitigación para cada uno (ej: injection → validación de input con Pydantic)."
+  type: daily
+  xp: 70
+  skill: finops_security
+  duration_min: 25
+  month: 1
+  week: 4
+  day: 5
+  acceptance: "Documento con 3 riesgos identificados, cada uno con mitigación concreta aplicable a tu API."
+  output: "docs/notes/owasp_api_risks.md"
+
+- id: m01w04_boss
+  title: "BOSS FINAL MES 1: Proyecto DE entregable"
+  description: "Integra todo lo del mes en un proyecto entregable: ETL que ingesta CSV → valida calidad → sube a Storage → carga a BigQuery → genera reporte. Con Dockerfile, CI/CD, Terraform, tests, README profesional, y documentación de costos. Este es tu primer proyecto de portafolio."
+  type: boss
+  xp: 500
+  skill: data_engineering
+  duration_min: 120
+  month: 1
+  week: 4
+  requires: m01w04d05
+  acceptance: "Proyecto completo en projects/01_data_engineering/. README permite a cualquiera clonar y correr. CI en verde. Al menos 10 tests. Reporte de calidad y costos documentados."
+  output: "projects/01_data_engineering/ completo y documentado"
+  github_hint: "Crea release v0.1.0 con tag. Esto va al portafolio."

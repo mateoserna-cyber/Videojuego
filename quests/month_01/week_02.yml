@@ -1,0 +1,109 @@
+- id: m01w02d01
+  title: "Cloud Storage: tu primer bucket"
+  description: "Crea un bucket en Cloud Storage usando gsutil (CLI). Sube el contacts.csv del boss fight anterior. Lista los objetos. Descárgalo a otra carpeta y verifica integridad con md5."
+  type: daily
+  xp: 65
+  skill: gcp_cloud
+  duration_min: 20
+  month: 1
+  week: 2
+  day: 1
+  requires: m01w01_boss
+  acceptance: "Bucket existe, archivo subido, gsutil ls muestra el objeto, md5 coincide."
+  output: "docs/notes/storage_commands.md con los comandos usados"
+  github_hint: "git commit -m 'quest(m01w02d01): primer bucket en Cloud Storage'"
+
+- id: m01w02d02
+  title: "BigQuery: carga tu propio dataset"
+  description: "Crea un dataset en BigQuery llamado 'cobranza_raw'. Carga el contacts.csv como tabla 'contactos'. Escribe 3 queries analíticas: distribución de montos, conteo por cartera, y promedio de días de mora. Exporta resultados."
+  type: daily
+  xp: 85
+  skill: data_engineering
+  duration_min: 30
+  month: 1
+  week: 2
+  day: 2
+  requires: m01w02d01
+  acceptance: "Dataset y tabla existen en BigQuery. 3 queries guardadas en archivo .sql que corren sin error."
+  output: "projects/01_data_engineering/sql/cobranza_analysis.sql"
+
+- id: m01w02d03
+  title: "Python + BigQuery: tu primera integración"
+  description: "Escribe un script bq_loader.py que usa google-cloud-bigquery para: 1) Leer un CSV local, 2) Crear tabla si no existe (schema explícito), 3) Cargar datos, 4) Correr una query y mostrar resultados. Usa service account key."
+  type: daily
+  xp: 90
+  skill: data_engineering
+  duration_min: 30
+  month: 1
+  week: 2
+  day: 3
+  requires: m01w02d02
+  acceptance: "bq_loader.py corre sin error, datos aparecen en BigQuery, y la query retorna resultados."
+  output: "projects/01_data_engineering/bq_loader.py"
+
+- id: m01w02d04
+  title: "Prompt Dojo: tu primer refactoring"
+  description: "Toma un prompt genérico: 'hazme un script que lea CSV'. Refactorízalo en 3 versiones progresivas: 1) con contexto y restricciones, 2) con ejemplos de input/output, 3) con formato de respuesta esperado. Documenta qué cambió y por qué mejoró cada versión."
+  type: daily
+  xp: 70
+  skill: rag_llm
+  duration_min: 25
+  month: 1
+  week: 2
+  day: 4
+  acceptance: "Documento con 3 versiones del prompt, explicación de cada mejora, y el output que generó cada uno."
+  output: "docs/prompt_training/01_csv_refactoring.md"
+
+- id: m01w02d05
+  title: "IAM: service account segura"
+  description: "Crea un service account en GCP con solo los permisos necesarios para BigQuery (bigquery.dataEditor + bigquery.jobUser). Genera una key JSON. Úsala en tu script bq_loader.py en vez de tu cuenta personal. Documenta los roles asignados."
+  type: daily
+  xp: 75
+  skill: finops_security
+  duration_min: 25
+  month: 1
+  week: 2
+  day: 5
+  requires: m01w02d03
+  acceptance: "Service account creada con 2 roles específicos. bq_loader.py funciona con esa SA. Key JSON NO está en el repo (está en .gitignore)."
+  output: "docs/notes/iam_service_account.md"
+  github_hint: "⚠️ NO subas la key JSON al repo. Agrégala a .gitignore."
+
+- id: m01w02_boss
+  title: "BOSS: ETL completo local → GCP"
+  description: "Construye un ETL end-to-end: 1) Lee CSV crudo de contactos (1000 filas fake), 2) Limpia y transforma (tus funciones de utils), 3) Sube CSV limpio a Cloud Storage, 4) Carga a BigQuery usando bq_loader, 5) Corre 5 queries analíticas y genera un reporte markdown con los resultados. Todo orquestado por un script main_etl.py."
+  type: boss
+  xp: 400
+  skill: data_engineering
+  duration_min: 120
+  month: 1
+  week: 2
+  requires: m01w02d05
+  acceptance: "main_etl.py corre completo sin intervención manual. Datos en BQ. Reporte generado con estadísticas reales."
+  output: "projects/01_data_engineering/main_etl.py + reports/etl_report_week02.md"
+  github_hint: "Branch boss/m01w02-etl, PR con checklist de criterios."
+
+- id: m01w02_mini01
+  title: "Revisar costos GCP del día"
+  description: "Entra a Billing > Reports en GCP Console. Verifica que tu gasto sea $0 o cerca. Anota qué servicios están consumiendo (si alguno)."
+  type: mini
+  xp: 15
+  skill: finops_security
+  duration_min: 3
+  month: 1
+  week: 2
+  is_mvq: true
+  acceptance: "Screenshot o nota con el gasto actual."
+  output: "docs/notes/finops_check_w02.md"
+
+- id: m01w02_mini02
+  title: "Git log: revisa tu progreso"
+  description: "Corre git log --oneline --graph y cuenta cuántos commits llevas. Toma screenshot."
+  type: mini
+  xp: 10
+  skill: leadership
+  duration_min: 3
+  month: 1
+  week: 2
+  is_mvq: true
+  acceptance: "Screenshot del git log."

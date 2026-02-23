@@ -1,0 +1,164 @@
+- id: m02w01d01
+  title: "Pub/Sub: tu primer topic y subscription"
+  description: "Crea un topic 'raw-contacts' y una subscription 'contacts-processor' en Pub/Sub. Escribe un publisher.py que publique 10 mensajes JSON (contactos fake) y un subscriber.py que los consuma e imprima. Usa la librería google-cloud-pubsub."
+  type: daily
+  xp: 80
+  skill: data_engineering
+  duration_min: 30
+  month: 2
+  week: 1
+  day: 1
+  requires: m01w04_boss
+  acceptance: "Publisher envía 10 mensajes, subscriber los recibe todos. Logs muestran cada mensaje procesado."
+  output: "projects/01_data_engineering/pubsub/publisher.py + subscriber.py"
+
+- id: m02w01d02
+  title: "Pub/Sub → BigQuery: pipeline streaming"
+  description: "Modifica subscriber.py para que en vez de solo imprimir, inserte cada mensaje en BigQuery usando streaming inserts. Agrega error handling: si BQ falla, loguea el error y el mensaje para retry."
+  type: daily
+  xp: 90
+  skill: data_engineering
+  duration_min: 30
+  month: 2
+  week: 1
+  day: 2
+  requires: m02w01d01
+  acceptance: "Publisher envía 50 mensajes, subscriber los inserta en BQ. Query en BQ muestra los 50 registros."
+  output: "projects/01_data_engineering/pubsub/stream_to_bq.py"
+
+- id: m02w01d03
+  title: "Dataflow: tu primer pipeline Apache Beam"
+  description: "Escribe un pipeline con apache-beam que: 1) Lea un CSV de Storage, 2) Filtre filas con monto > 10000, 3) Normalice teléfonos, 4) Escriba el resultado en BigQuery. Córrelo primero con DirectRunner (local)."
+  type: daily
+  xp: 95
+  skill: data_engineering
+  duration_min: 30
+  month: 2
+  week: 1
+  day: 3
+  requires: m02w01d02
+  acceptance: "Pipeline corre en DirectRunner sin errores. Datos filtrados aparecen en BigQuery."
+  output: "projects/01_data_engineering/dataflow/beam_pipeline.py"
+
+- id: m02w01d04
+  title: "Dataflow en la nube: DataflowRunner"
+  description: "Corre tu pipeline beam con DataflowRunner en GCP. Configura: region, temp_location en Storage, machine_type n1-standard-1. Monitorea el job en Dataflow Console. Documenta tiempos y costos."
+  type: daily
+  xp: 85
+  skill: data_engineering
+  duration_min: 25
+  month: 2
+  week: 1
+  day: 4
+  requires: m02w01d03
+  acceptance: "Job completado en Dataflow Console. Datos en BigQuery. Documento con tiempo de ejecución y costo estimado."
+  output: "docs/notes/dataflow_first_run.md"
+
+- id: m02w01d05
+  title: "Prompt Dojo: EDA con IA"
+  description: "Escribe un prompt para que Claude/ChatGPT te ayude a hacer EDA de un dataset de cobranza. Versión 1: genérico ('analiza estos datos'). Versión 2: con contexto de negocio, preguntas específicas, y formato esperado. Versión 3: pide código Python con pandas. Evalúa la calidad de cada respuesta."
+  type: daily
+  xp: 70
+  skill: rag_llm
+  duration_min: 25
+  month: 2
+  week: 1
+  day: 5
+  acceptance: "3 versiones del prompt documentadas con evaluación de respuesta."
+  output: "docs/prompt_training/03_eda_prompts.md"
+
+- id: m02w01_boss
+  title: "BOSS: Pipeline streaming Pub/Sub → Dataflow → BigQuery"
+  description: "Construye el pipeline completo: 1) Publisher envía contactos a Pub/Sub, 2) Dataflow streaming pipeline lee de Pub/Sub, transforma (limpia, normaliza, valida calidad), y escribe a BigQuery, 3) Monitoreo: dashboard simple en Data Studio/Looker con conteo de registros por hora. Documenta arquitectura y costos."
+  type: boss
+  xp: 450
+  skill: data_engineering
+  duration_min: 120
+  month: 2
+  week: 1
+  requires: m02w01d05
+  acceptance: "Pipeline streaming funciona end-to-end. Publisher envía 100 mensajes, aparecen en BQ en menos de 5 min. Diagrama de arquitectura en el README."
+  output: "projects/01_data_engineering/ actualizado con pipeline streaming"
+  github_hint: "Branch boss/m02w01-streaming, PR con diagrama de arquitectura."
+
+- id: m02w02d01
+  title: "Data Science: tu primer notebook"
+  description: "Crea un Jupyter notebook en projects/02_data_science/ con dataset público (ej: bigquery-public-data.chicago_taxi_trips o similar). Sección 1: hipótesis (3 preguntas de negocio). Sección 2: carga de datos. Sección 3: df.info(), df.describe(), df.isnull().sum(). Todo con markdown explicativo."
+  type: daily
+  xp: 75
+  skill: data_science
+  duration_min: 30
+  month: 2
+  week: 2
+  day: 1
+  acceptance: "Notebook ejecutable con 3 secciones, hipótesis claras, y estadísticas descriptivas."
+  output: "projects/02_data_science/01_eda.ipynb"
+
+- id: m02w02d02
+  title: "EDA: visualizaciones que cuentan historia"
+  description: "Agrega al notebook: 1) Distribución de variable target (histograma), 2) Correlación entre variables numéricas (heatmap), 3) Serie temporal si aplica, 4) Top categorías (bar chart). Usa matplotlib/seaborn. Cada gráfico debe tener título, ejes etiquetados, y 1 línea de interpretación."
+  type: daily
+  xp: 80
+  skill: data_science
+  duration_min: 30
+  month: 2
+  week: 2
+  day: 2
+  requires: m02w02d01
+  acceptance: "4 visualizaciones con interpretación. No hay gráficos sin labels."
+  output: "projects/02_data_science/01_eda.ipynb (actualizado)"
+
+- id: m02w02d03
+  title: "Feature Engineering: crea variables útiles"
+  description: "Crea al menos 5 features nuevas a partir del dataset: 1) Binning de variable continua, 2) One-hot encoding de categórica, 3) Feature temporal (día de semana, hora, mes), 4) Ratio entre 2 variables, 5) Flag binario basado en lógica de negocio. Documenta el razonamiento de cada una."
+  type: daily
+  xp: 85
+  skill: data_science
+  duration_min: 30
+  month: 2
+  week: 2
+  day: 3
+  requires: m02w02d02
+  acceptance: "5 features creadas con explicación de por qué cada una podría ser útil para un modelo."
+  output: "projects/02_data_science/02_features.ipynb"
+
+- id: m02w02d04
+  title: "Métricas: entiende qué estás midiendo"
+  description: "Escribe un documento explicando con ejemplos propios: accuracy, precision, recall, F1, AUC-ROC, y MAE/RMSE. Para cada métrica: cuándo usarla, cuándo NO usarla, y un ejemplo con números reales. Include la fórmula en LaTeX o plain text."
+  type: daily
+  xp: 75
+  skill: data_science
+  duration_min: 25
+  month: 2
+  week: 2
+  day: 4
+  acceptance: "Documento con 6 métricas explicadas con ejemplos numéricos y cuándo usar cada una."
+  output: "docs/notes/ml_metrics_explained.md"
+
+- id: m02w02d05
+  title: "Data leakage: el enemigo invisible"
+  description: "Escribe un notebook que demuestre data leakage. Crea un dataset fake donde: 1) Primero entrenas con leakage (feature que 've' el futuro) y muestras accuracy artificialmente alta, 2) Luego lo corriges con train/test split temporal y muestras la métrica real. Explica por qué pasó."
+  type: daily
+  xp: 90
+  skill: data_science
+  duration_min: 30
+  month: 2
+  week: 2
+  day: 5
+  requires: m02w02d04
+  acceptance: "Notebook con 2 escenarios: con y sin leakage. Diferencia en métricas es obvia. Explicación clara."
+  output: "projects/02_data_science/03_leakage_demo.ipynb"
+
+- id: m02w02_boss
+  title: "BOSS: Reporte de Data Science reproducible"
+  description: "Produce un reporte completo de DS sobre tu dataset: 1) Hipótesis → 2) EDA con visualizaciones → 3) Feature engineering → 4) Modelo baseline (LogisticRegression o DecisionTree) → 5) Evaluación con métricas apropiadas → 6) Conclusiones y limitaciones. El notebook debe correr de inicio a fin sin errores (reproducible)."
+  type: boss
+  xp: 500
+  skill: data_science
+  duration_min: 120
+  month: 2
+  week: 2
+  requires: m02w02d05
+  acceptance: "Notebook corre completo con Restart & Run All. Tiene todas las 6 secciones. Métricas reportadas correctamente. No hay leakage."
+  output: "projects/02_data_science/full_report.ipynb + projects/02_data_science/README.md"
+  github_hint: "Este es tu segundo proyecto de portafolio. Release v0.2.0."

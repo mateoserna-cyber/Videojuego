@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Game saves (local, no versionear)
+save_data/player_save.json
+save_data/progress_log.jsonl
+
+# Secrets
+.env
+*.key
+*.pem
+service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars

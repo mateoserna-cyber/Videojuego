@@ -1,0 +1,100 @@
+- id: m01w01d01
+  title: "Setup del campo de batalla"
+  description: "Configura tu entorno: crea el repo gcp-quest en GitHub, clona en local, instala Python 3.11+, crea virtualenv, y haz tu primer commit con un hello_world.py que imprima tu nombre."
+  type: daily
+  xp: 75
+  skill: gcp_cloud
+  duration_min: 25
+  month: 1
+  week: 1
+  day: 1
+  acceptance: "Repo existe en GitHub, tiene hello_world.py, y el primer commit está hecho."
+  output: "hello_world.py en la raíz del repo"
+  github_hint: "git commit -m 'quest(m01w01d01): setup inicial del campo de batalla'"
+
+- id: m01w01d02
+  title: "GCP Console: reconocimiento del terreno"
+  description: "Entra a console.cloud.google.com, crea un proyecto nuevo llamado 'gcp-quest-lab', activa la facturación (tier gratis), y habilita BigQuery API y Cloud Storage API. Toma screenshot del dashboard."
+  type: daily
+  xp: 60
+  skill: gcp_cloud
+  duration_min: 20
+  month: 1
+  week: 1
+  day: 2
+  requires: m01w01d01
+  acceptance: "Proyecto gcp-quest-lab creado, BigQuery y Storage APIs habilitadas."
+  output: "docs/screenshots/gcp_setup.png"
+  github_hint: "git commit -m 'quest(m01w01d02): proyecto GCP configurado'"
+
+- id: m01w01d03
+  title: "Python: funciones que muerden"
+  description: "Escribe un módulo utils.py con 3 funciones: normalize_phone(phone) que limpia teléfonos chilenos, parse_csv_row(row) que convierte un dict de strings a tipos correctos, y validate_email(email) con regex. Incluye docstrings y type hints."
+  type: daily
+  xp: 80
+  skill: data_engineering
+  duration_min: 30
+  month: 1
+  week: 1
+  day: 3
+  requires: m01w01d01
+  acceptance: "utils.py tiene 3 funciones con type hints y docstrings. Cada función maneja al menos 1 edge case."
+  output: "projects/01_data_engineering/utils.py"
+  github_hint: "git commit -m 'quest(m01w01d03): utils con funciones de limpieza'"
+
+- id: m01w01d04
+  title: "SQL: las 7 consultas mortales"
+  description: "Usando BigQuery (sandbox gratis con bigquery-public-data), escribe 7 queries progresivas sobre el dataset chicago_taxi_trips: SELECT básico, WHERE+ORDER, GROUP BY+HAVING, JOIN, subquery, window function (ROW_NUMBER), y CTE. Guárdalas en un archivo .sql comentado."
+  type: daily
+  xp: 90
+  skill: data_science
+  duration_min: 30
+  month: 1
+  week: 1
+  day: 4
+  requires: m01w01d02
+  acceptance: "7 queries SQL que corren sin error en BigQuery. Cada una tiene un comentario explicando qué hace."
+  output: "projects/01_data_engineering/sql/seven_deadly_queries.sql"
+  github_hint: "git commit -m 'quest(m01w01d04): 7 queries SQL progresivas en BigQuery'"
+
+- id: m01w01d05
+  title: "Tests: tu primer escudo"
+  description: "Escribe tests para las 3 funciones de utils.py usando pytest. Mínimo 2 tests por función (caso feliz + edge case). Crea un pytest.ini o pyproject.toml con configuración básica."
+  type: daily
+  xp: 70
+  skill: data_engineering
+  duration_min: 25
+  month: 1
+  week: 1
+  day: 5
+  requires: m01w01d03
+  acceptance: "pytest corre y los 6+ tests pasan. Output de pytest muestra verde."
+  output: "projects/01_data_engineering/tests/test_utils.py"
+  github_hint: "git commit -m 'quest(m01w01d05): tests para utils.py'"
+
+- id: m01w01_boss
+  title: "BOSS: Pipeline local CSV→JSON→Validado"
+  description: "Construye un script pipeline.py que: 1) Lee un CSV de contactos de cobranza (crea datos fake con 100 filas), 2) Limpia y normaliza cada fila usando tus funciones de utils.py, 3) Valida campos obligatorios (teléfono, nombre, monto), 4) Escribe los válidos a output.json y los inválidos a errors.json, 5) Imprime resumen: total/válidos/inválidos. Incluye logging."
+  type: boss
+  xp: 300
+  skill: data_engineering
+  duration_min: 90
+  month: 1
+  week: 1
+  requires: m01w01d05
+  acceptance: "pipeline.py corre con python pipeline.py, procesa 100 filas, genera output.json y errors.json, e imprime resumen con conteos."
+  output: "projects/01_data_engineering/pipeline.py + sample_data/contacts.csv"
+  github_hint: "Crea branch boss/m01w01-pipeline, trabaja ahí, y abre PR al terminar."
+
+- id: m01w01_mini01
+  title: "Leer: qué es IAM en GCP"
+  description: "Lee https://cloud.google.com/iam/docs/overview (5 min). Anota en 3 bullets: qué es un role, qué es un service account, qué es el principio de least privilege."
+  type: mini
+  xp: 25
+  skill: finops_security
+  duration_min: 5
+  month: 1
+  week: 1
+  is_mvq: true
+  acceptance: "3 bullets escritos en docs/notes/iam_basics.md"
+  output: "docs/notes/iam_basics.md"
