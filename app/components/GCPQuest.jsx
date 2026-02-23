@@ -244,7 +244,17 @@ Responde SOLO JSON sin backticks:
       if (data.error) throw new Error(data.error);
       const txt = data.choices?.[0]?.message?.content || "";
       setResult(JSON.parse(txt.replace(/```json|```/g, "").trim()));
-    } catch (e) { setResult({ passed: false, score: 0, feedback: `Error: ${e?.message || "Error de conexión"}. Revisa la consola.`, tip: "Verifica que ZAI_API_KEY esté configurada en Vercel." }); }
+    } catch (e) { 
+      const errorMsg = e?.message || "Error de conexión";
+      const isBalanceError = errorMsg.includes('1113') || errorMsg.includes('余额不足');
+      const feedback = isBalanceError 
+        ? "API sin créditos disponibles. Usa verificación manual o recarga la cuenta de BigModel.cn." 
+        : `Error: ${errorMsg}. Revisa la consola.`;
+      const tip = isBalanceError 
+        ? "Haz clic en 'Marcar Manual' abajo para completar esta misión sin IA." 
+        : "Verifica que ZAI_API_KEY esté configurada en Vercel.";
+      setResult({ passed: false, score: 0, feedback, tip }); 
+    }
     setVerifying(false);
   };
 
