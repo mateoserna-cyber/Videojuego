@@ -224,7 +224,7 @@ function AIVerifier({ quest, onVerified, onClose }) {
     try {
       const r = await fetch("/api/verify", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user",
+        body: JSON.stringify({ model: "claude-3-5-sonnet-20241022", max_tokens: 1000, messages: [{ role: "user",
           content: `Eres evaluador técnico de un RPG de aprendizaje GCP. Evalúa si el output del estudiante cumple el criterio.
 
 MISIÓN: ${quest.t}
@@ -243,7 +243,7 @@ Responde SOLO JSON sin backticks:
       const data = await r.json();
       const txt = data.content?.map(i => i.text || "").join("") || "";
       setResult(JSON.parse(txt.replace(/```json|```/g, "").trim()));
-    } catch { setResult({ passed: false, score: 0, feedback: "Error de conexión. Intenta de nuevo.", tip: "" }); }
+    } catch (e) { setResult({ passed: false, score: 0, feedback: `Error: ${e?.message || "Error de conexión"}. Revisa la consola.`, tip: "Verifica que ANTHROPIC_API_KEY esté configurada en Vercel." }); }
     setVerifying(false);
   };
 
