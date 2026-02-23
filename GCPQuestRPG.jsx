@@ -476,6 +476,97 @@ function ZoneView({month,state,onSelectQuest,onBack}) {
   );
 }
 
+// ═══════════════ LO-FI MUSIC ENGINE ═══════════════
+function useBgMusic() {
+  const e = useRef({ctx:null,master:null,lpf:null,sched:null,nextT:0,bi:0,on:false});
+  const [on,setOn] = useState(false);
+
+  const note = (ctx,lpf,dly,freq,when,dur,vol=0.09,type='sine') => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type=type; o.frequency.value=freq;
+    o.detune.value=(Math.random()-.5)*14;
+    g.gain.setValueAtTime(0,when);
+    g.gain.linearRampToValueAtTime(vol,when+.18);
+    g.gain.exponentialRampToValueAtTime(.0001,when+dur-.05);
+    o.connect(g); g.connect(lpf); g.connect(dly);
+    o.start(when); o.stop(when+dur+.1);
+  };
+
+  const toggle = () => {
+    const r = e.current;
+    if(r.on) {
+      clearTimeout(r.sched);
+      r.master?.gain.setTargetAtTime(0,r.ctx.currentTime,.5);
+      setTimeout(()=>r.ctx?.suspend(),900);
+      r.on=false; setOn(false);
+      return;
+    }
+    if(!r.ctx) r.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const ctx = r.ctx;
+    ctx.resume();
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0,ctx.currentTime);
+    master.gain.linearRampToValueAtTime(.38,ctx.currentTime+2.5);
+    master.connect(ctx.destination);
+    r.master = master;
+
+    const lpf = ctx.createBiquadFilter();
+    lpf.type='lowpass'; lpf.frequency.value=1100; lpf.Q.value=.55;
+    lpf.connect(master);
+    r.lpf = lpf;
+
+    const dly = ctx.createDelay(.9);
+    dly.delayTime.value=.44;
+    const fb = ctx.createGain(); fb.gain.value=.27;
+    dly.connect(fb); fb.connect(dly); dly.connect(master);
+
+    // Lo-fi Am7 progression @ 68 BPM
+    const bpm=68, beat=60/bpm, bar=beat*4;
+    const prog=[
+      [110,130.81,164.81,220],   // Am7
+      [87.31,110,130.81,174.61], // Fmaj7
+      [130.81,164.81,196,261.63],// Cmaj7
+      [98,130.81,164.81,196],    // G7
+    ];
+    const mel=[261.63,293.66,329.63,392,440,392,329.63,261.63,246.94,220];
+    r.bi=0;
+    r.nextT = ctx.currentTime+.1;
+
+    const tick = () => {
+      const chord = prog[r.bi%4];
+      const t = r.nextT;
+      // Pads (root+third+fifth)
+      chord.slice(0,3).forEach(f=>note(ctx,lpf,dly,f,t,bar*2-.25,.075));
+      // Sub bass (one octave down)
+      note(ctx,lpf,dly,chord[0]*.5,t,bar*2-.25,.13);
+      // Hi note (chord seventh, soft)
+      note(ctx,lpf,dly,chord[3],t+beat*.5,bar*1.2-.2,.05);
+      // Melody: 2–3 random pentatonic notes
+      const count = 2+Math.floor(Math.random()*2);
+      for(let i=0;i<count;i++) {
+        const mf = mel[Math.floor(Math.random()*mel.length)];
+        const off = beat*(i*2.2+Math.random()*1.2);
+        note(ctx,lpf,dly,mf*2,t+off,beat*2,.05);
+      }
+      r.nextT += bar*2;
+      r.bi++;
+      r.sched = setTimeout(tick,(bar*2-.4)*1000);
+    };
+
+    tick();
+    r.on=true; setOn(true);
+  };
+
+  useEffect(()=>()=>{
+    clearTimeout(e.current.sched);
+    e.current.ctx?.close();
+  },[]);
+
+  return {on, toggle};
+}
+
 // ═══════════════ MAIN GAME ═══════════════
 export default function GCPQuestRPG() {
   const [state,setState] = useState(defState);
@@ -490,6 +581,7 @@ export default function GCPQuestRPG() {
   const [showMenu,setShowMenu] = useState(false);
   const mapRef = useRef(null);
   const animRef = useRef(null);
+  const {on:musicOn, toggle:toggleMusic} = useBgMusic();
 
   useEffect(()=>{
     try{
@@ -582,6 +674,13 @@ export default function GCPQuestRPG() {
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             <div style={{textAlign:"center"}}><span style={{color:"#f59e0b",fontWeight:800}}>🔥{state.streak}</span></div>
             <div style={{textAlign:"center"}}><span style={{color:"#10b981",fontWeight:700,fontSize:12}}>✅{state.done.length}</span></div>
+            <button onClick={toggleMusic}
+              title={musicOn?"Pausar música":"Reproducir lo-fi"}
+              style={{background:"#1a1a30",border:`1px solid ${musicOn?"#3d5afe44":"#2a2a40"}`,borderRadius:8,padding:"6px 10px",
+                color:musicOn?"#3d5afe":"#3a3a58",fontSize:15,cursor:"pointer",
+                transition:"all 0.25s",boxShadow:musicOn?"0 0 10px #3d5afe33":"none"}}>
+              {musicOn?"🎵":"🔇"}
+            </button>
             <button onClick={()=>{setScreen("skills");setShowMenu(false);}} style={{background:"#1a1a30",border:"1px solid #2a2a40",borderRadius:8,padding:"6px 12px",color:"#8888a8",fontSize:12,cursor:"pointer",fontWeight:600}}>🌳 Skills</button>
           </div>
         </div>
