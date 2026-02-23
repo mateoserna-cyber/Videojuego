@@ -221,40 +221,14 @@ function AIVerifier({ quest, onVerified, onClose }) {
   const verify = async () => {
     if (!code.trim()) return;
     setVerifying(true); setResult(null);
-    try {
-      const r = await fetch("/api/verify", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "glm-4-plus", max_tokens: 1000, messages: [{ role: "user",
-          content: `Eres evaluador técnico de un RPG de aprendizaje GCP. Evalúa si el output del estudiante cumple el criterio.
-
-MISIÓN: ${quest.t}
-DESCRIPCIÓN: ${quest.d}
-CRITERIO: ${quest.a}
-SKILL: ${SKILLS[quest.s]?.name}
-
-OUTPUT DEL ESTUDIANTE:
-\`\`\`
-${code}
-\`\`\`
-
-Responde SOLO JSON sin backticks:
-{"passed":true/false,"score":NUMBER_1_10,"feedback":"2-3 oraciones en español","tip":"1 consejo para mejorar"}` }] }),
-      });
-      const data = await r.json();
-      if (data.error) throw new Error(data.error);
-      const txt = data.choices?.[0]?.message?.content || "";
-      setResult(JSON.parse(txt.replace(/```json|```/g, "").trim()));
-    } catch (e) { 
-      const errorMsg = e?.message || "Error de conexión";
-      const isBalanceError = errorMsg.includes('1113') || errorMsg.includes('余额不足');
-      const feedback = isBalanceError 
-        ? "API sin créditos disponibles. Usa verificación manual o recarga la cuenta de BigModel.cn." 
-        : `Error: ${errorMsg}. Revisa la consola.`;
-      const tip = isBalanceError 
-        ? "Haz clic en 'Marcar Manual' abajo para completar esta misión sin IA." 
-        : "Verifica que ZAI_API_KEY esté configurada en Vercel.";
-      setResult({ passed: false, score: 0, feedback, tip }); 
-    }
+    
+    // Skip AI verification - use manual verification instead
+    setResult({ 
+      passed: false, 
+      score: 0, 
+      feedback: "Verificación IA deshabilitada. Por favor usa verificación manual.", 
+      tip: "Haz clic en '✓ Manual' para completar esta misión." 
+    });
     setVerifying(false);
   };
 
@@ -279,13 +253,13 @@ Responde SOLO JSON sin backticks:
           <textarea ref={ref} value={code} onChange={e => setCode(e.target.value)} placeholder={"# Pega tu código o describe lo que hiciste...\n# También puedes pegar el output de terminal"} rows={8}
             style={{ width:"100%",background:"#0c0c16",border:"1px solid #2a2a3e",borderRadius:8,padding:12,color:"#e0e0e8",fontFamily:"'Menlo','Courier New',monospace",fontSize:13,resize:"vertical",outline:"none",boxSizing:"border-box",lineHeight:1.5 }} />
           <div style={{ display:"flex",gap:8,marginTop:12 }}>
-            <button onClick={verify} disabled={!code.trim() || verifying}
-              style={{ flex:1,padding:"12px 0",borderRadius:8,border:"none",background:verifying?"#2a2a3e":"#3d5afe",color:"#fff",fontWeight:700,fontSize:14,cursor:verifying?"default":"pointer",opacity:!code.trim()?0.4:1,transition:"all 0.2s" }}>
-              {verifying ? "⏳ Evaluando..." : "🤖 Verificar con IA"}
-            </button>
             <button onClick={markManual}
-              style={{ padding:"12px 16px",borderRadius:8,border:"1px solid #2a2a3e",background:"none",color:"#8888a8",fontSize:13,cursor:"pointer" }}>
-              ✓ Manual
+              style={{ flex:1,padding:"12px 0",borderRadius:8,border:"none",background:"#10b981",color:"#fff",fontWeight:700,fontSize:14,cursor:"pointer",transition:"all 0.2s" }}>
+              ✓ Marcar como Completada
+            </button>
+            <button onClick={verify} disabled={true}
+              style={{ padding:"12px 16px",borderRadius:8,border:"1px solid #2a2a3e",background:"#1a1a24",color:"#4a4a5a",fontSize:13,cursor:"not-allowed",opacity:0.5 }}>
+              🤖 IA (Sin créditos)
             </button>
           </div>
           {result && (
