@@ -224,7 +224,7 @@ function AIVerifier({ quest, onVerified, onClose }) {
     try {
       const r = await fetch("/api/verify", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "glm-4-flash", max_tokens: 1000, messages: [{ role: "user",
+        body: JSON.stringify({ model: "glm-4-plus", max_tokens: 1000, messages: [{ role: "user",
           content: `Eres evaluador técnico de un RPG de aprendizaje GCP. Evalúa si el output del estudiante cumple el criterio.
 
 MISIÓN: ${quest.t}
