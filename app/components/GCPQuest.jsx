@@ -224,7 +224,7 @@ function AIVerifier({ quest, onVerified, onClose }) {
     try {
       const r = await fetch("/api/verify", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "claude-3-5-sonnet-20241022", max_tokens: 1000, messages: [{ role: "user",
+        body: JSON.stringify({ model: "glm-4-flash", max_tokens: 1000, messages: [{ role: "user",
           content: `Eres evaluador técnico de un RPG de aprendizaje GCP. Evalúa si el output del estudiante cumple el criterio.
 
 MISIÓN: ${quest.t}
@@ -241,9 +241,10 @@ Responde SOLO JSON sin backticks:
 {"passed":true/false,"score":NUMBER_1_10,"feedback":"2-3 oraciones en español","tip":"1 consejo para mejorar"}` }] }),
       });
       const data = await r.json();
-      const txt = data.content?.map(i => i.text || "").join("") || "";
+      if (data.error) throw new Error(data.error);
+      const txt = data.choices?.[0]?.message?.content || "";
       setResult(JSON.parse(txt.replace(/```json|```/g, "").trim()));
-    } catch (e) { setResult({ passed: false, score: 0, feedback: `Error: ${e?.message || "Error de conexión"}. Revisa la consola.`, tip: "Verifica que ANTHROPIC_API_KEY esté configurada en Vercel." }); }
+    } catch (e) { setResult({ passed: false, score: 0, feedback: `Error: ${e?.message || "Error de conexión"}. Revisa la consola.`, tip: "Verifica que ZAI_API_KEY esté configurada en Vercel." }); }
     setVerifying(false);
   };
 
