@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bot Tonto IVR — Costeo Final Optimizado</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f8f9fb; color: #333; }
+  .container { max-width: 960px; margin: 0 auto; padding: 16px; }
+  .header { background: linear-gradient(135deg, #1a237e, #0d47a1); border-radius: 12px; padding: 18px 22px; margin-bottom: 16px; color: #fff; }
+  .header h1 { font-size: 20px; font-weight: 700; }
+  .header p { font-size: 12px; opacity: 0.75; margin-top: 4px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: #fff; border-radius: 10px; padding: 14px 12px; }
+  .kpi-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .kpi-value { font-size: 20px; font-weight: 800; }
+  .kpi-sub { font-size: 10px; color: #aaa; margin-top: 2px; }
+  .slider-row { background: #fff; border-radius: 10px; padding: 12px 16px; border: 1px solid #e0e0e0; margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
+  .slider-row span.label { font-size: 11px; color: #666; white-space: nowrap; }
+  .slider-row input[type=range] { flex: 1; accent-color: #1a237e; }
+  .slider-row span.value { font-size: 14px; font-weight: 700; color: #1a237e; min-width: 70px; text-align: right; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .card { background: #fff; border-radius: 10px; padding: 16px; border: 1px solid #e0e0e0; }
+  .card h3 { margin-bottom: 10px; font-size: 13px; color: #1a237e; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; font-size: 11px; border-collapse: collapse; }
+  table td { padding: 5px 0; }
+  .row-border { border-bottom: 1px solid #f0f0f0; }
+  .row-border-dark { border-bottom: 1px solid #e0e0e0; }
+  .text-right { text-align: right; }
+  .text-muted { color: #888; }
+  .text-bold { font-weight: 600; }
+  .text-bolder { font-weight: 700; }
+  .text-boldest { font-weight: 800; }
+  .total-row td { padding: 8px 0; font-size: 13px; font-weight: 700; color: #1a237e; }
+  .total-row .val { font-size: 15px; font-weight: 800; }
+  .box-blue { margin-top: 16px; padding: 12px; background: #e3f2fd; border-radius: 8px; border: 1px solid #bbdefb; }
+  .box-blue .title { font-size: 10px; color: #1565c0; font-weight: 600; margin-bottom: 4px; }
+  .box-blue .formula { font-size: 13px; font-weight: 700; color: #0d47a1; font-family: monospace; }
+  .box-orange { margin-top: 10px; padding: 12px; background: #fff3e0; border-radius: 8px; border: 1px solid #ffe0b2; }
+  .box-orange .title { font-size: 10px; color: #e65100; font-weight: 600; margin-bottom: 4px; }
+  .box-orange .formula { font-size: 13px; font-weight: 700; color: #bf360c; font-family: monospace; }
+  .box-orange .result { font-size: 16px; font-weight: 800; color: #bf360c; margin-top: 4px; }
+  .box-orange .usd { font-size: 10px; color: #e65100; margin-top: 2px; }
+  .box-green { margin-top: 10px; padding: 12px; background: #e8f5e9; border-radius: 8px; border: 1px solid #c8e6c9; }
+  .box-green .title { font-size: 10px; color: #2e7d32; font-weight: 600; margin-bottom: 4px; }
+  .box-green .formula { font-size: 13px; font-weight: 700; color: #1b5e20; font-family: monospace; }
+  .chart-container { position: relative; width: 100%; height: 280px; }
+  canvas { width: 100%; height: 100%; }
+  .data-table { text-align: right; }
+  .data-table thead tr { background: #1a237e; color: #fff; }
+  .data-table th { padding: 8px 6px; font-weight: 600; font-size: 11px; }
+  .data-table th:first-child { text-align: left; border-radius: 6px 0 0 0; }
+  .data-table th:last-child { border-radius: 0 6px 0 0; }
+  .data-table td { padding: 6px; font-size: 11px; border-bottom: 1px solid #eee; }
+  .data-table td:first-child { text-align: left; }
+  .highlight-row { background: #e8f5e9 !important; font-weight: 700 !important; }
+  .even-row { background: #fafafa; }
+  .notes { margin-top: 12px; padding: 12px; background: #e8eaf6; border-radius: 8px; border: 1px solid #c5cae9; font-size: 10px; color: #283593; }
+  .warning-card { background: #fff8e1; border: 1px solid #ffecb3; border-left: 4px solid #ff8f00; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .warning-card h3 { color: #e65100; margin-bottom: 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .warning-card ul { list-style: none; padding: 0; }
+  .warning-card li { font-size: 11px; color: #555; padding: 4px 0; border-bottom: 1px solid #fff3e0; }
+  .warning-card li:last-child { border-bottom: none; }
+  .warning-card .item-label { font-weight: 600; color: #e65100; }
+  .warning-card .item-est { font-weight: 700; color: #bf360c; float: right; }
+  .comparison-card { background: #f3e5f5; border: 1px solid #e1bee7; border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .comparison-card h3 { color: #6a1b9a; margin-bottom: 10px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .comparison-row { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #f3e5f5; }
+  .comparison-row:last-child { border-bottom: none; }
+  .comp-label { color: #666; }
+  .comp-old { color: #999; text-decoration: line-through; }
+  .comp-new { color: #2e7d32; font-weight: 700; }
+  .comp-diff { color: #2e7d32; font-weight: 600; font-size: 10px; }
+  @media (max-width: 700px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>Bot Tonto IVR — Costeo Final Optimizado</h1>
+    <p>Llamada de 30 seg · Deepgram pay-as-you-go · Buffer TC 5% · v0 + Supabase incluidos · Costos fijos diarios</p>
+  </div>
+
+  <div class="kpi-grid" id="kpis"></div>
+
+  <div class="slider-row">
+    <span class="label">Volumen mensual:</span>
+    <input type="range" id="volumeSlider" min="5000" max="300000" step="1000" value="66667">
+    <span class="value" id="volumeLabel"></span>
+  </div>
+
+  <!-- Comparison with original -->
+  <div class="comparison-card" id="comparisonCard"></div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3>Costos Fijos Diarios</h3>
+      <table id="fixedTable"></table>
+    </div>
+    <div class="card">
+      <h3>Costos Variables por Llamada</h3>
+      <table id="varTable"></table>
+      <div class="box-blue">
+        <div class="title">ECUACION DE COSTO TOTAL</div>
+        <div class="formula" id="formulaEq"></div>
+      </div>
+      <div class="box-orange">
+        <div class="title">COSTO TOTAL MENSUAL</div>
+        <div class="formula" id="formulaTotal"></div>
+        <div class="result" id="formulaResult"></div>
+        <div class="usd" id="formulaUSD"></div>
+      </div>
+      <div class="box-green">
+        <div class="title">AHORRO VS COSTEO ANTERIOR</div>
+        <div class="formula" id="savingsFormula"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden costs warning -->
+  <div class="warning-card">
+    <h3>Costos No Considerados / Riesgos</h3>
+    <ul>
+      <li>
+        <span class="item-label">GCP Network Egress</span> — Trafico saliente de la VM (audio streams, API responses). Bajo volumen es free tier, pero a 100K+ llamadas podria sumar.
+        <span class="item-est">~$5-15 USD/mes</span>
+      </li>
+      <li>
+        <span class="item-label">DIDs / Numeros telefonicos</span> — El carrier SIP cobra $7/llamada pero no incluye arriendo de numeros DID. Si se necesitan numeros dedicados.
+        <span class="item-est">~$5-20 USD/mes</span>
+      </li>
+      <li>
+        <span class="item-label">GCP Snapshots / Backups</span> — Backups automaticos del disco de la VM Asterisk. Recomendado pero no incluido.
+        <span class="item-est">~$3-8 USD/mes</span>
+      </li>
+      <li>
+        <span class="item-label">Dominio + DNS</span> — Si se usa dominio propio para el dashboard/API.
+        <span class="item-est">~$1-2 USD/mes</span>
+      </li>
+      <li>
+        <span class="item-label">Deepgram sin plan: rate limits</span> — Pay-as-you-go tiene limites de concurrencia mas bajos. A alto volumen simultáneo podria requerir plan Growth igualmente.
+        <span class="item-est">Riesgo operacional</span>
+      </li>
+      <li>
+        <span class="item-label">Asterisk e2-standard-8 concurrencia</span> — 8 vCPUs manejan ~80-120 llamadas simultaneas. Si el volumen se concentra en horario punta, podria necesitar escalar.
+        <span class="item-est">Riesgo a >100K/mes</span>
+      </li>
+      <li>
+        <span class="item-label">Logging / Observabilidad extra</span> — Cloud Logging en GCP cobra por volumen de logs ingestados. Con debug activado puede sumar.
+        <span class="item-est">~$0-10 USD/mes</span>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <h3>Costo por Llamada vs Volumen</h3>
+    <div class="chart-container">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Tabla de Costos por Volumen</h3>
+    <div style="overflow-x:auto">
+      <table class="data-table" id="dataTable"></table>
+    </div>
+  </div>
+
+  <div class="notes">
+    <strong>Notas:</strong> Deepgram en modo pay-as-you-go (sin plan mensual $128 USD). El costo variable Deepgram usa tarifa Nova-3 español $0,0077 USD/min (~10s escucha/llamada).
+    Buffer TC cubre fluctuacion del tipo de cambio (~5% sobre costos USD convertidos a CLP por llamada).
+    Carrier SIP fijo a $7 CLP/llamada. Kokoro TTS: banco de audio pregenerado.
+    TC base: $950 CLP/USD. Vercel Pro x 1 seat ($20 USD/mes). v0 Pro ($20 USD/mes). Supabase Pro ($25 USD/mes).
+    <br><br>
+    <strong>Cambios vs costeo anterior:</strong> Se elimina Deepgram plan mensual ($128 USD) de fijos. Se reemplaza "Ownership $2/llamada" por "Buffer TC $1,50/llamada".
+    Se agregan v0 Pro y Supabase Pro como herramientas de desarrollo. Resultado neto: -$83 USD/mes en fijos, -$0,50 CLP/llamada en variables.
+  </div>
+</div>
+
+<script>
+const TC = 950;
+
+// --- FIXED COSTS (UPDATED) ---
+const fixedItems = [
+  { name: "VM Asterisk e2-standard-8", usd: 268 },
+  { name: "Storage GCS (grabaciones + WAVs)", usd: 2 },
+  { name: "Monitoring (Uptime + Alerts)", usd: 15 },
+  { name: "Vercel Pro x 1 seat", usd: 20 },
+  { name: "v0 Pro x 1 seat", usd: 20 },
+  { name: "Supabase Pro", usd: 25 },
+];
+const DAYS = 30;
+const fixedMonthlyUSD = fixedItems.reduce((s, i) => s + i.usd, 0);
+const fixedDailyUSD = fixedMonthlyUSD / DAYS;
+const fixedDailyCLP = Math.round(fixedDailyUSD * TC);
+const fixedTotal = fixedDailyCLP * DAYS;
+
+// --- ORIGINAL FIXED (for comparison) ---
+const origFixedUSD = 268 + 128 + 2 + 15 + 20; // 433
+const origFixedTotal = Math.round(origFixedUSD / DAYS) * TC * DAYS;
+const origFixedTotalExact = origFixedUSD * TC;
+
+// --- VARIABLE COSTS (UPDATED) ---
+const varCarrier = 7.0;
+const varDeepgram = Math.round(0.0077 * 0.167 * TC * 100) / 100; // ~1.22 CLP
+const varKokoro = 0.5;
+const varBufferTC = 1.5; // replaces Ownership — covers ~5% TC fluctuation on USD variable costs
+const varSubtotal = varCarrier + varDeepgram + varKokoro + varBufferTC;
+const varTotal = Math.round(varSubtotal * 100) / 100;
+
+// --- ORIGINAL VARIABLE (for comparison) ---
+const origVarTotal = Math.round((7.0 + varDeepgram + 0.5 + 2.0) * 100) / 100;
+
+const volumes = [5000,10000,15000,20000,30000,40000,50000,66667,80000,100000,120000,150000,200000,250000,300000];
+
+function calcData() {
+  return volumes.map(vol => {
+    const fixedPerCall = fixedTotal / vol;
+    const totalPerCall = fixedPerCall + varTotal;
+    const totalMonth = fixedTotal + vol * varTotal;
+    return {
+      vol,
+      volK: vol >= 1000 ? (vol/1000).toFixed(vol%1000===0?0:1) + "K" : String(vol),
+      fixedPerCall: Math.round(fixedPerCall * 100) / 100,
+      varPerCall: varTotal,
+      totalPerCall: Math.round(totalPerCall * 100) / 100,
+      totalMonth: Math.round(totalMonth),
+    };
+  });
+}
+const tableData = calcData();
+
+// --- Formatting ---
+function fmt(n) { return n.toLocaleString("es-CL", { maximumFractionDigits: 0 }); }
+function fmtD(n) { return n.toLocaleString("es-CL", { maximumFractionDigits: 2 }); }
+function fmtUSD(n) { return n.toLocaleString("en-US", { maximumFractionDigits: 0 }); }
+
+// --- Render fixed table ---
+function renderFixedTable() {
+  let html = "<tbody>";
+  fixedItems.forEach(item => {
+    const dailyUSD = Math.round(item.usd / DAYS * 100) / 100;
+    const dailyCLP = Math.round(item.usd * TC / DAYS);
+    html += `<tr class="row-border">
+      <td style="color:#555">${item.name}</td>
+      <td class="text-right text-muted" style="font-size:10px">USD $${fmtD(dailyUSD)}/dia</td>
+      <td class="text-right text-bold" style="width:80px">$${fmt(dailyCLP)}/dia</td>
+    </tr>`;
+  });
+  html += `<tr class="row-border-dark">
+    <td style="color:#555;font-weight:600" colspan="2">Total diario</td>
+    <td class="text-right text-bolder">$${fmt(fixedDailyCLP)}/dia</td>
+  </tr>`;
+  html += `<tr class="total-row">
+    <td colspan="2">EQUIVALENTE MENSUAL (x${DAYS})</td>
+    <td class="text-right val">$${fmt(fixedTotal)}</td>
+  </tr>`;
+  html += "</tbody>";
+  document.getElementById("fixedTable").innerHTML = html;
+}
+
+// --- Render variable table ---
+function renderVarTable() {
+  let html = "<tbody>";
+  html += `<tr class="row-border"><td style="color:#555">Carrier SIP (0,5 min x $14)</td><td class="text-right text-bold">$${fmtD(varCarrier)}</td></tr>`;
+  html += `<tr class="row-border"><td style="color:#555">Deepgram STT Nova-3 es (~10s) <span style="font-size:9px;color:#1565c0">[pay-as-you-go]</span></td><td class="text-right text-bold">$${fmtD(varDeepgram)}</td></tr>`;
+  html += `<tr class="row-border"><td style="color:#555">Kokoro TTS (banco audio + delta)</td><td class="text-right text-bold">$${fmtD(varKokoro)}</td></tr>`;
+  html += `<tr class="row-border"><td style="color:#0d47a1">Buffer tipo de cambio (~5% USD)</td><td class="text-right text-bold" style="color:#0d47a1">$${fmtD(varBufferTC)}</td></tr>`;
+  html += `<tr class="total-row"><td>TOTAL VARIABLE</td><td class="text-right val">$${fmtD(varTotal)} /llamada</td></tr>`;
+  html += "</tbody>";
+  document.getElementById("varTable").innerHTML = html;
+}
+
+// --- Render KPIs ---
+function renderKPIs(volume) {
+  const fixedPerCall = fixedTotal / volume;
+  const totalPerCall = fixedPerCall + varTotal;
+  const totalMonth = fixedTotal + volume * varTotal;
+  const volLabel = (volume/1000).toFixed(volume%1000===0?0:1) + "K";
+
+  const kpis = [
+    { label: "Fijos/dia", value: "$" + fmt(fixedDailyCLP), sub: "$" + fmt(fixedTotal) + "/mes (USD $" + fmtUSD(fixedMonthlyUSD) + ")", color: "#1a237e" },
+    { label: "Variable/llamada", value: "$" + fmtD(varTotal), sub: "con buffer TC", color: "#0d47a1" },
+    { label: "CLP/llamada @ " + volLabel, value: "$" + fmtD(totalPerCall), sub: "fijo + variable", color: "#2e7d32" },
+    { label: "Total mensual", value: "$" + fmt(Math.round(totalMonth)), sub: "USD $" + fmtUSD(Math.round(totalMonth/TC)), color: "#e65100" },
+  ];
+
+  let html = "";
+  kpis.forEach(k => {
+    html += `<div class="kpi" style="border:1px solid ${k.color}22;border-top:3px solid ${k.color}">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.color}">${k.value}</div>
+      <div class="kpi-sub">${k.sub}</div>
+    </div>`;
+  });
+  document.getElementById("kpis").innerHTML = html;
+}
+
+// --- Render comparison ---
+function renderComparison(volume) {
+  const newTotal = fixedTotal + volume * varTotal;
+  const origTotal = origFixedTotalExact + volume * origVarTotal;
+  const diff = origTotal - newTotal;
+  const diffPct = ((diff / origTotal) * 100).toFixed(1);
+  const diffUSD = Math.round(diff / TC);
+
+  const newPerCall = (fixedTotal / volume) + varTotal;
+  const origPerCall = (origFixedTotalExact / volume) + origVarTotal;
+
+  let html = `<h3>Comparacion vs Costeo Anterior @ ${fmt(volume)} llamadas/mes</h3>`;
+  html += `<div class="comparison-row">
+    <span class="comp-label">Fijos mensuales</span>
+    <span><span class="comp-old">$${fmt(Math.round(origFixedTotalExact))}</span> → <span class="comp-new">$${fmt(fixedTotal)}</span> <span class="comp-diff">(-$${fmt(Math.round(origFixedTotalExact - fixedTotal))})</span></span>
+  </div>`;
+  html += `<div class="comparison-row">
+    <span class="comp-label">Variable/llamada</span>
+    <span><span class="comp-old">$${fmtD(origVarTotal)}</span> → <span class="comp-new">$${fmtD(varTotal)}</span> <span class="comp-diff">(-$${fmtD(origVarTotal - varTotal)})</span></span>
+  </div>`;
+  html += `<div class="comparison-row">
+    <span class="comp-label">CLP/llamada</span>
+    <span><span class="comp-old">$${fmtD(origPerCall)}</span> → <span class="comp-new">$${fmtD(newPerCall)}</span></span>
+  </div>`;
+  html += `<div class="comparison-row" style="padding-top:8px;border-top:2px solid #ce93d8">
+    <span class="comp-label" style="font-weight:700;color:#6a1b9a">Ahorro mensual total</span>
+    <span style="font-weight:800;color:#2e7d32;font-size:14px">-$${fmt(Math.round(diff))} CLP (-${diffPct}%) ≈ USD -$${fmtUSD(diffUSD)}</span>
+  </div>`;
+  html += `<div class="comparison-row">
+    <span class="comp-label" style="font-size:10px;color:#888">Herramientas ganadas: v0 Pro (UI generation) + Supabase Pro (auth, DB, realtime)</span>
+    <span></span>
+  </div>`;
+  document.getElementById("comparisonCard").innerHTML = html;
+}
+
+// --- Render formulas ---
+function renderFormulas(volume) {
+  const totalMonth = fixedTotal + volume * varTotal;
+  const origTotal = origFixedTotalExact + volume * origVarTotal;
+  const savings = origTotal - totalMonth;
+
+  document.getElementById("formulaEq").textContent = "CLP/llamada = " + fmt(fixedTotal) + " / N + " + fmtD(varTotal);
+  document.getElementById("formulaTotal").textContent = "$" + fmt(fixedTotal) + " + (" + fmt(volume) + " x $" + fmtD(varTotal) + ")";
+  document.getElementById("formulaResult").textContent = "= $" + fmt(Math.round(totalMonth)) + " CLP/mes";
+  document.getElementById("formulaUSD").textContent = "≈ USD $" + fmtUSD(Math.round(totalMonth/TC)) + "/mes";
+  document.getElementById("savingsFormula").textContent = "-$" + fmt(Math.round(savings)) + " CLP/mes vs anterior (USD -$" + fmtUSD(Math.round(savings/TC)) + ")";
+}
+
+// --- Render data table ---
+function renderDataTable() {
+  let html = `<thead><tr>
+    <th style="text-align:left">Llamadas/mes</th>
+    <th>Fijo/llamada</th><th>Variable</th>
+    <th style="font-weight:700">CLP/llamada</th>
+    <th>Total fijos</th><th>Total variable</th>
+    <th>Total mes CLP</th><th>Total USD</th>
+  </tr></thead><tbody>`;
+  tableData.forEach((d, i) => {
+    const hl = (d.vol === 66667 || d.vol === 100000 || d.vol === 150000);
+    const cls = hl ? "highlight-row" : (i % 2 === 0 ? "even-row" : "");
+    html += `<tr class="${cls}" style="${hl?'font-weight:700':''}">
+      <td style="text-align:left">${fmt(d.vol)}</td>
+      <td>$${fmtD(d.fixedPerCall)}</td>
+      <td>$${fmtD(d.varPerCall)}</td>
+      <td style="color:#1a237e;font-weight:700">$${fmtD(d.totalPerCall)}</td>
+      <td style="color:#888">$${fmt(fixedTotal)}</td>
+      <td style="color:#888">$${fmt(Math.round(d.vol * varTotal))}</td>
+      <td style="color:#e65100;font-weight:600">$${fmt(d.totalMonth)}</td>
+      <td style="color:#888;font-size:10px">USD $${fmtUSD(Math.round(d.totalMonth/TC))}</td>
+    </tr>`;
+  });
+  html += "</tbody>";
+  document.getElementById("dataTable").innerHTML = html;
+}
+
+// --- Draw chart ---
+function drawChart() {
+  const canvas = document.getElementById("chart");
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + "px";
+  canvas.style.height = rect.height + "px";
+  const ctx = canvas.getContext("2d");
+  ctx.scale(dpr, dpr);
+  const W = rect.width;
+  const H = rect.height;
+
+  const pad = { top: 20, right: 20, bottom: 40, left: 65 };
+  const cw = W - pad.left - pad.right;
+  const ch = H - pad.top - pad.bottom;
+
+  // Calculate both lines for comparison
+  const newVals = tableData.map(d => d.totalPerCall);
+  const origVals = tableData.map(d => {
+    const origFixedPerCall = origFixedTotalExact / d.vol;
+    return Math.round((origFixedPerCall + origVarTotal) * 100) / 100;
+  });
+
+  const maxY = Math.ceil(Math.max(...origVals) / 10) * 10;
+  const minY = 0;
+
+  function xPos(i) { return pad.left + (i / (tableData.length - 1)) * cw; }
+  function yPos(v) { return pad.top + ch - ((v - minY) / (maxY - minY)) * ch; }
+
+  // Grid
+  ctx.strokeStyle = "#f0f0f0";
+  ctx.lineWidth = 1;
+  const yTicks = 6;
+  for (let i = 0; i <= yTicks; i++) {
+    const v = minY + (maxY - minY) * i / yTicks;
+    const y = yPos(v);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = "#999"; ctx.font = "10px sans-serif"; ctx.textAlign = "right";
+    ctx.fillText("$" + fmt(Math.round(v)), pad.left - 8, y + 3);
+  }
+
+  // Y label
+  ctx.save();
+  ctx.translate(12, pad.top + ch / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillStyle = "#999"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+  ctx.fillText("CLP/llamada", 0, 0);
+  ctx.restore();
+
+  // X labels
+  ctx.fillStyle = "#999"; ctx.font = "10px sans-serif"; ctx.textAlign = "center";
+  tableData.forEach((d, i) => {
+    if (i % 2 === 0 || i === tableData.length - 1) {
+      ctx.fillText(d.volK, xPos(i), H - pad.bottom + 18);
+    }
+  });
+
+  // Original line (dashed, gray)
+  ctx.beginPath();
+  ctx.setLineDash([5, 4]);
+  origVals.forEach((v, i) => {
+    if (i === 0) ctx.moveTo(xPos(i), yPos(v));
+    else ctx.lineTo(xPos(i), yPos(v));
+  });
+  ctx.strokeStyle = "#ccc";
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // New area fill
+  const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+  grad.addColorStop(0, "rgba(46,125,50,0.15)");
+  grad.addColorStop(1, "rgba(46,125,50,0.02)");
+  ctx.beginPath();
+  ctx.moveTo(xPos(0), yPos(0));
+  newVals.forEach((v, i) => ctx.lineTo(xPos(i), yPos(v)));
+  ctx.lineTo(xPos(tableData.length - 1), yPos(0));
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // New line
+  ctx.beginPath();
+  newVals.forEach((v, i) => {
+    if (i === 0) ctx.moveTo(xPos(i), yPos(v));
+    else ctx.lineTo(xPos(i), yPos(v));
+  });
+  ctx.strokeStyle = "#2e7d32";
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Dots (new)
+  newVals.forEach((v, i) => {
+    ctx.beginPath();
+    ctx.arc(xPos(i), yPos(v), 3, 0, Math.PI * 2);
+    ctx.fillStyle = "#2e7d32";
+    ctx.fill();
+  });
+
+  // Legend
+  const lx = pad.left + 10;
+  const ly = pad.top + 12;
+  ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 25, ly); ctx.strokeStyle = "#ccc"; ctx.lineWidth = 2; ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = "#999"; ctx.font = "10px sans-serif"; ctx.textAlign = "left";
+  ctx.fillText("Anterior", lx + 30, ly + 3);
+
+  ctx.beginPath(); ctx.moveTo(lx, ly + 16); ctx.lineTo(lx + 25, ly + 16); ctx.strokeStyle = "#2e7d32"; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.fillStyle = "#2e7d32";
+  ctx.fillText("Optimizado", lx + 30, ly + 19);
+
+  // Tooltip
+  canvas.onmousemove = function(e) {
+    const br = canvas.getBoundingClientRect();
+    const mx = e.clientX - br.left;
+    let closest = 0, minDist = Infinity;
+    tableData.forEach((d, i) => {
+      const dist = Math.abs(xPos(i) - mx);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    });
+    if (minDist < 30) {
+      canvas.style.cursor = "crosshair";
+      const origPC = origVals[closest];
+      const newPC = newVals[closest];
+      canvas.title = tableData[closest].volK + ": $" + fmtD(newPC) + " (antes $" + fmtD(origPC) + ")";
+    } else {
+      canvas.style.cursor = "default";
+      canvas.title = "";
+    }
+  };
+}
+
+// --- Init & update ---
+function update() {
+  const volume = parseInt(document.getElementById("volumeSlider").value);
+  document.getElementById("volumeLabel").textContent = fmt(volume);
+  renderKPIs(volume);
+  renderFormulas(volume);
+  renderComparison(volume);
+}
+
+renderFixedTable();
+renderVarTable();
+renderDataTable();
+update();
+
+window.addEventListener("load", drawChart);
+window.addEventListener("resize", drawChart);
+document.getElementById("volumeSlider").addEventListener("input", update);
+</script>
+</body>
+</html>
