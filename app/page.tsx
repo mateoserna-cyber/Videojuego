@@ -76,13 +76,20 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadData() {
       try {
+        console.log('[v0] Starting to load data...');
         const [playerRes, questsRes] = await Promise.all([
           fetch('/api/player'),
           fetch('/api/quests')
         ]);
         
+        console.log('[v0] Player response status:', playerRes.status);
+        console.log('[v0] Quests response status:', questsRes.status);
+        
         const playerData = await playerRes.json();
         const questsData = await questsRes.json();
+        
+        console.log('[v0] Player data:', playerData);
+        console.log('[v0] Quests data:', questsData.length, 'quests');
         
         setPlayer(playerData);
         setQuests(questsData);

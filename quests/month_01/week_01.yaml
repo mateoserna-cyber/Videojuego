@@ -1,0 +1,83 @@
+quests:
+  - id: gcp_intro_001
+    title: "Introducción a Google Cloud Platform"
+    description: "Aprende los fundamentos de GCP, crea tu primera cuenta y explora la consola."
+    category: gcp
+    difficulty: beginner
+    xp_reward: 50
+    skills:
+      gcp: 10
+    estimated_time: "2-3 horas"
+    objectives:
+      - "Crear una cuenta de GCP"
+      - "Explorar la consola de GCP"
+      - "Activar el crédito gratuito de $300"
+      - "Crear tu primer proyecto"
+    resources:
+      - "https://cloud.google.com/docs"
+      - "GCP Free Tier Documentation"
+    
+  - id: python_basics_001
+    title: "Fundamentos de Python para Data Engineering"
+    description: "Refuerza tus conocimientos de Python enfocándote en las estructuras de datos más usadas."
+    category: data_engineering
+    difficulty: beginner
+    xp_reward: 40
+    skills:
+      data_engineering: 8
+    estimated_time: "1-2 horas"
+    objectives:
+      - "Repasar listas, diccionarios y sets"
+      - "Practicar list comprehensions"
+      - "Trabajar con archivos CSV"
+    resources:
+      - "https://docs.python.org/3/"
+      
+  - id: ml_concepts_001
+    title: "Conceptos Básicos de Machine Learning"
+    description: "Entiende la diferencia entre supervised y unsupervised learning."
+    category: machine_learning
+    difficulty: beginner
+    xp_reward: 45
+    skills:
+      machine_learning: 9
+    estimated_time: "2 horas"
+    objectives:
+      - "Comprender tipos de aprendizaje automático"
+      - "Estudiar casos de uso comunes"
+      - "Explorar datasets públicos"
+    resources:
+      - "https://scikit-learn.org/stable/"
+      
+  - id: git_basics_001
+    title: "Git y GitHub Essentials"
+    description: "Domina el control de versiones con Git y colabora en GitHub."
+    category: devops
+    difficulty: beginner
+    xp_reward: 35
+    skills:
+      devops: 7
+    estimated_time: "1.5 horas"
+    objectives:
+      - "Configurar Git localmente"
+      - "Crear un repositorio en GitHub"
+      - "Hacer commits y push"
+      - "Crear tu primer Pull Request"
+    resources:
+      - "https://docs.github.com"
+      
+  - id: portfolio_setup_001
+    title: "Configurar tu Portfolio"
+    description: "Crea la estructura básica de tu portfolio de proyectos."
+    category: portfolio
+    difficulty: beginner
+    xp_reward: 30
+    skills:
+      portfolio: 6
+    estimated_time: "1 hora"
+    objectives:
+      - "Definir la estructura de tu portfolio"
+      - "Crear README para cada proyecto"
+      - "Documentar tus habilidades"
+    resources:
+      - "GitHub Portfolio Examples"

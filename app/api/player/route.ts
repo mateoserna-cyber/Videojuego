@@ -45,10 +45,13 @@ const DEFAULT_PLAYER: PlayerData = {
 
 export async function GET() {
   try {
+    console.log('[v0] Reading player file from:', PLAYER_FILE);
     const data = await readFile(PLAYER_FILE, 'utf-8');
     const player = JSON.parse(data);
+    console.log('[v0] Player data loaded:', player.name);
     return NextResponse.json(player);
   } catch (error) {
+    console.log('[v0] Player file not found, using defaults');
     // If file doesn't exist, return default player
     return NextResponse.json(DEFAULT_PLAYER);
   }

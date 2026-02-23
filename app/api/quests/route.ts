@@ -105,6 +105,7 @@ const MOCK_QUESTS = [
 ];
 
 export async function GET(request: Request) {
+  console.log('[v0] Quests API called');
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
   const difficulty = searchParams.get('difficulty');
@@ -119,5 +120,6 @@ export async function GET(request: Request) {
     filteredQuests = filteredQuests.filter(q => q.difficulty === difficulty);
   }
   
+  console.log('[v0] Returning', filteredQuests.length, 'quests');
   return NextResponse.json(filteredQuests);
 }
