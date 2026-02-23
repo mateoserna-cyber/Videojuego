@@ -246,65 +246,121 @@ function QuestDetail({quest,state,onComplete,onBack}) {
   const quizDone = state.quizOk.includes(quest.id);
   const [phase,setPhase] = useState(isDone?"done":quizDone?"verify":"quiz");
   const [showAI,setShowAI] = useState(false);
+  const [mounted,setMounted] = useState(false);
+  const [bossFlash,setBossFlash] = useState(quest.tp===1);
   const sk = SKI[quest.s];
   const tp = quest.tp===1?"🐉 BOSS":quest.tp===2?"⚡ MINI":"📋 DAILY";
+  const isBoss = quest.tp===1;
+
+  useEffect(()=>{
+    setTimeout(()=>setMounted(true),30);
+    if(isBoss) setTimeout(()=>setBossFlash(false),700);
+  },[]);
 
   const handleResult = (r) => {
     setShowAI(false);
-    if(phase==="quiz") { setPhase("verify"); }
-    else if(phase==="verify") { setPhase("reflect"); }
+    if(phase==="quiz") setPhase("verify");
+    else if(phase==="verify") setPhase("reflect");
     else if(phase==="reflect") { onComplete(quest); setPhase("done"); }
   };
 
   const phases = [
-    {k:"quiz",n:"Quiz",i:"🧠",done:quizDone||phase!=="quiz"},
-    {k:"verify",n:"Código",i:"💻",done:phase==="reflect"||phase==="done"},
-    {k:"reflect",n:"Reflexión",i:"✍️",done:phase==="done"},
+    {k:"quiz",n:"Quiz",i:"🧠",done:quizDone||phase!=="quiz",color:"#8b5cf6"},
+    {k:"verify",n:"Código",i:"💻",done:phase==="reflect"||phase==="done",color:"#3d5afe"},
+    {k:"reflect",n:"Reflexión",i:"✍️",done:phase==="done",color:"#10b981"},
   ];
+  const curPhase = phases.find(p=>p.k===phase);
+
+  const phaseActions = {
+    quiz: {label:"🧠 Iniciar Quiz de Predicción",bg:"#8b5cf6"},
+    verify: {label:"🤖 Verificar con IA",bg:"#3d5afe"},
+    reflect: {label:"✍️ Escribir Reflexión",bg:"#10b981"},
+  };
 
   return (
-    <div style={{position:"fixed",inset:0,background:"#0a0a14",zIndex:50,overflow:"auto"}}>
-      <div style={{maxWidth:640,margin:"0 auto",padding:20}}>
-        <button onClick={onBack} style={{background:"none",border:"none",color:"#5a5a78",fontSize:13,cursor:"pointer",marginBottom:16}}>← Volver</button>
-        <div style={{background:"#12121f",border:`1px solid ${sk.c}33`,borderRadius:14,padding:24,marginBottom:20}}>
-          {quest.tp===1&&<div style={{height:3,background:`linear-gradient(90deg,${sk.c},#ef4444)`,borderRadius:4,marginBottom:16}}/>}
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+    <div style={{position:"fixed",inset:0,background:isBoss?"#06040f":"#0a0a14",zIndex:50,overflow:"auto",
+      opacity:mounted?1:0,transform:mounted?"none":"translateY(16px)",transition:"opacity 0.3s,transform 0.3s"}}>
+      {/* Boss background flash */}
+      {bossFlash && <div style={{position:"fixed",inset:0,background:"rgba(239,68,68,0.08)",zIndex:0,animation:"bossFlash 0.7s ease-out forwards",pointerEvents:"none"}} />}
+      {/* Boss ambient particles */}
+      {isBoss && Array.from({length:8}).map((_,i)=>(
+        <div key={i} style={{position:"fixed",left:`${10+i*12}%`,top:`${15+Math.sin(i)*20}%`,
+          fontSize:18+i%3*6,opacity:0.12,animation:`float${i%3} ${4+i%3}s ease-in-out infinite`,pointerEvents:"none"}}>💀</div>
+      ))}
+      <div style={{position:"relative",zIndex:1,maxWidth:640,margin:"0 auto",padding:"20px 20px 48px"}}>
+        <button onClick={onBack} style={{background:"rgba(255,255,255,0.04)",border:"1px solid #ffffff0a",borderRadius:8,color:"#5a5a78",fontSize:13,padding:"6px 14px",cursor:"pointer",marginBottom:20}}>← Volver</button>
+        {/* Boss banner */}
+        {isBoss && (
+          <div style={{background:"linear-gradient(135deg,#2a0a0a,#1a0505)",border:"1px solid #ef444433",borderRadius:12,padding:"12px 18px",marginBottom:16,
+            display:"flex",alignItems:"center",gap:12,animation:"bossEntry 0.5s cubic-bezier(.22,1,.36,1)"}}>
+            <span style={{fontSize:32,animation:"bossHover 2s ease-in-out infinite"}}>🐉</span>
             <div>
-              <span style={{color:"#5a5a78",fontSize:11,fontWeight:600}}>{tp}</span>
-              <h2 style={{color:"#e8e8f4",fontSize:20,fontWeight:800,margin:"4px 0"}}>{quest.t}</h2>
-              <span style={{color:sk.c,fontSize:13}}>{sk.i} {sk.n}</span>
+              <p style={{color:"#ef4444",fontWeight:800,fontSize:13,margin:"0 0 2px",textTransform:"uppercase",letterSpacing:"0.1em"}}>Boss Fight</p>
+              <p style={{color:"#7a4a4a",fontSize:12,margin:0}}>Derrota este BOSS para desbloquear el siguiente mes</p>
             </div>
-            <div style={{textAlign:"right"}}>
-              <p style={{color:"#f59e0b",fontSize:22,fontWeight:800,margin:0}}>+{quest.x}</p>
-              <p style={{color:"#5a5a78",fontSize:11,margin:0}}>XP</p>
-            </div>
+            <span style={{marginLeft:"auto",color:"#ef4444",fontWeight:800,fontSize:20}}>+{quest.x} XP</span>
           </div>
-          <div style={{background:"#0a0a16",borderRadius:8,padding:12,border:"1px solid #1a1a30"}}>
-            <p style={{color:"#8888a8",fontSize:11,margin:"0 0 4px"}}>CRITERIO DE APROBACIÓN</p>
-            <p style={{color:"#d0d0e0",fontSize:14,margin:0,lineHeight:1.5}}>{quest.a}</p>
+        )}
+        {/* Quest card */}
+        <div style={{background:"#12121f",border:`1px solid ${sk.c}${isBoss?"55":"33"}`,borderRadius:14,padding:24,marginBottom:16,
+          boxShadow:isBoss?`0 0 30px ${sk.c}22`:"none"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+            <div>
+              <div style={{display:"flex",gap:6,alignItems:"center",marginBottom:6}}>
+                <span style={{background:`${sk.c}18`,color:sk.c,fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20}}>{sk.i} {sk.n}</span>
+                <span style={{background:isBoss?"#ef444412":"#ffffff08",color:isBoss?"#ef4444":"#5a5a78",fontSize:11,fontWeight:600,padding:"2px 8px",borderRadius:20}}>{tp}</span>
+              </div>
+              <h2 style={{color:"#e8e8f4",fontSize:20,fontWeight:800,margin:0,lineHeight:1.3}}>{quest.t}</h2>
+            </div>
+            {!isBoss && (
+              <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                <p style={{color:"#f59e0b",fontSize:22,fontWeight:800,margin:0}}>+{quest.x}</p>
+                <p style={{color:"#4a4a68",fontSize:10,margin:0}}>XP</p>
+              </div>
+            )}
+          </div>
+          <div style={{background:"#0a0a16",borderRadius:8,padding:"10px 14px",border:`1px solid ${sk.c}18`}}>
+            <p style={{color:sk.c,fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",margin:"0 0 3px"}}>Criterio de Aprobación</p>
+            <p style={{color:"#d0d0e0",fontSize:14,margin:0,lineHeight:1.6}}>{quest.a}</p>
           </div>
         </div>
         {/* Phase Stepper */}
         {!isDone && (
-          <div style={{display:"flex",gap:8,marginBottom:20}}>
-            {phases.map((p,i)=>(
-              <div key={p.k} style={{flex:1,background:phase===p.k?"#1a1a34":"#12121f",border:`1px solid ${phase===p.k?"#3d5afe44":"#1e1e34"}`,borderRadius:10,padding:12,textAlign:"center",opacity:p.done?0.5:1}}>
-                <span style={{fontSize:22}}>{p.done&&phase!==p.k?"✅":p.i}</span>
-                <p style={{color:phase===p.k?"#3d5afe":"#5a5a78",fontSize:12,fontWeight:600,margin:"4px 0 0"}}>Fase {i+1}: {p.n}</p>
-              </div>
-            ))}
+          <div style={{display:"flex",gap:6,marginBottom:16}}>
+            {phases.map((p,i)=>{
+              const isActive = phase===p.k;
+              const isDoneP = p.done&&phase!==p.k;
+              return (
+                <div key={p.k} style={{flex:1,background:isActive?`${p.color}12`:"#0c0c18",
+                  border:`1.5px solid ${isActive?p.color+"66":isDoneP?"#10b98144":"#1e1e34"}`,
+                  borderRadius:10,padding:"10px 8px",textAlign:"center",
+                  transition:"all 0.3s",
+                  boxShadow:isActive?`0 0 16px ${p.color}22`:"none",
+                  animation:isActive?"phaseActive 2s ease-in-out infinite":"none"}}>
+                  <span style={{fontSize:isActive?24:18,transition:"font-size 0.2s"}}>{isDoneP?"✅":p.i}</span>
+                  <p style={{color:isActive?p.color:isDoneP?"#10b981":"#3a3a58",fontSize:11,fontWeight:700,margin:"4px 0 0",transition:"color 0.3s"}}>Fase {i+1}: {p.n}</p>
+                  {isActive&&<div style={{height:2,background:p.color,borderRadius:2,marginTop:6,animation:"phaseLine 2s ease-in-out infinite"}} />}
+                </div>
+              );
+            })}
           </div>
         )}
         {isDone ? (
-          <div style={{background:"rgba(16,185,129,0.08)",border:"1px solid #10b98133",borderRadius:12,padding:24,textAlign:"center"}}>
-            <span style={{fontSize:48}}>✅</span>
-            <p style={{color:"#10b981",fontSize:18,fontWeight:700,margin:"8px 0"}}>Misión Completada</p>
+          <div style={{background:"rgba(16,185,129,0.07)",border:"1px solid #10b98133",borderRadius:12,padding:32,textAlign:"center",animation:"completeBounce 0.5s cubic-bezier(.22,1,.36,1)"}}>
+            <div style={{fontSize:64,animation:"spin 0.5s ease-out"}}>✅</div>
+            <p style={{color:"#10b981",fontSize:20,fontWeight:800,margin:"12px 0 4px"}}>¡Misión Completada!</p>
             <p style={{color:"#5a5a78",fontSize:13}}>+{quest.x} XP ganados</p>
           </div>
         ) : (
           <button onClick={()=>setShowAI(true)}
-            style={{width:"100%",padding:"14px 0",borderRadius:10,border:"none",background:phase==="quiz"?"#8b5cf6":phase==="verify"?"#3d5afe":"#10b981",color:"#fff",fontWeight:700,fontSize:15,cursor:"pointer",boxShadow:"0 4px 20px rgba(0,0,0,0.3)"}}>
-            {phase==="quiz"?"🧠 Iniciar Quiz de Predicción":phase==="verify"?"🤖 Verificar Código con IA":"✍️ Escribir Reflexión"}
+            disabled={!!isDone}
+            style={{width:"100%",padding:"15px 0",borderRadius:12,border:"none",
+              background:phaseActions[phase]?.bg||"#3d5afe",
+              color:"#fff",fontWeight:800,fontSize:15,cursor:"pointer",
+              boxShadow:`0 6px 24px ${phaseActions[phase]?.bg||"#3d5afe"}44`,
+              transition:"transform 0.15s,box-shadow 0.15s",
+              animation:"btnPulse 3s ease-in-out infinite"}}>
+            {phaseActions[phase]?.label}
           </button>
         )}
       </div>
@@ -321,51 +377,92 @@ function ZoneView({month,state,onSelectQuest,onBack}) {
   const dailies = quests.filter(q=>q.tp===0);
   const bosses = quests.filter(q=>q.tp===1);
   const minis = quests.filter(q=>q.tp===2);
+  const [mounted,setMounted] = useState(false);
+  const [hovered,setHovered] = useState(null);
+  useEffect(()=>{setTimeout(()=>setMounted(true),30);},[]);
+  const pct = quests.length>0?done/quests.length*100:0;
 
   return (
-    <div style={{position:"fixed",inset:0,background:mo.b,zIndex:40,overflow:"auto"}}>
-      {/* Ambient particles */}
-      {Array.from({length:12}).map((_,i)=>(
-        <div key={i} style={{position:"fixed",left:`${10+i*8}%`,top:`${20+Math.sin(i)*30}%`,fontSize:16+i%3*4,opacity:0.15,animation:`float${i%3} ${3+i%4}s ease-in-out infinite`,pointerEvents:"none"}}>{mo.t}</div>
+    <div style={{position:"fixed",inset:0,background:mo.b,zIndex:40,overflow:"auto",
+      opacity:mounted?1:0,transform:mounted?"none":"translateX(20px)",transition:"opacity 0.35s,transform 0.35s"}}>
+      {/* Ambient particles más visibles */}
+      {Array.from({length:16}).map((_,i)=>(
+        <div key={i} style={{position:"fixed",
+          left:`${5+i*6}%`,top:`${15+Math.sin(i*1.2)*35}%`,
+          fontSize:14+i%4*5,opacity:0.1+i%3*0.04,
+          animation:`float${i%3} ${3+i%4}s ease-in-out infinite`,
+          animationDelay:`${i*0.4}s`,pointerEvents:"none",
+          filter:`hue-rotate(${i*20}deg)`}}>{mo.t}</div>
       ))}
-      <div style={{position:"relative",zIndex:1,maxWidth:700,margin:"0 auto",padding:20}}>
-        <button onClick={onBack} style={{background:"rgba(0,0,0,0.3)",border:"1px solid #ffffff15",borderRadius:8,color:"#aaa",fontSize:13,padding:"8px 16px",cursor:"pointer",marginBottom:16,backdropFilter:"blur(4px)"}}>
-          ← Mapa Mundial
-        </button>
-        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24}}>
-          <div style={{width:64,height:64,borderRadius:14,background:`${mo.c}22`,border:`2px solid ${mo.c}44`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:32}}>{mo.i}</div>
+      {/* Scanline overlay sutil */}
+      <div style={{position:"fixed",inset:0,background:"repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.03) 3px,rgba(0,0,0,0.03) 4px)",pointerEvents:"none",zIndex:0}} />
+      <div style={{position:"relative",zIndex:1,maxWidth:700,margin:"0 auto",padding:"20px 20px 48px"}}>
+        <button onClick={onBack} style={{background:"rgba(0,0,0,0.35)",border:"1px solid #ffffff12",borderRadius:8,color:"#8888a8",fontSize:13,padding:"8px 16px",cursor:"pointer",marginBottom:20,backdropFilter:"blur(6px)"}}>← Mapa</button>
+        {/* Header de zona */}
+        <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:24,animation:"slideDown 0.4s cubic-bezier(.22,1,.36,1)"}}>
+          <div style={{width:70,height:70,borderRadius:16,background:`${mo.c}18`,border:`2px solid ${mo.c}55`,
+            display:"flex",alignItems:"center",justifyContent:"center",fontSize:34,
+            boxShadow:`0 0 20px ${mo.c}33`,animation:"iconBob 3s ease-in-out infinite"}}>{mo.i}</div>
           <div style={{flex:1}}>
-            <h1 style={{color:"#e8e8f4",fontSize:22,fontWeight:800,margin:0}}>Mes {month}: {mo.n}</h1>
-            <p style={{color:"#8888a8",fontSize:13,margin:"2px 0"}}>{mo.d}</p>
-            <div style={{display:"flex",alignItems:"center",gap:8,marginTop:6}}>
-              <div style={{background:"#0a0a16",borderRadius:3,height:6,width:120,overflow:"hidden"}}>
-                <div style={{height:"100%",width:`${done/quests.length*100}%`,background:mo.c,borderRadius:3,transition:"width 0.5s"}} />
+            <h1 style={{color:"#e8e8f4",fontSize:22,fontWeight:800,margin:"0 0 2px"}}>Mes {month}: {mo.n}</h1>
+            <p style={{color:"#6a6a88",fontSize:13,margin:"0 0 8px"}}>{mo.d}</p>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <div style={{background:"#0a0a16",borderRadius:4,height:8,flex:1,overflow:"hidden",border:"1px solid #1a1a30"}}>
+                <div style={{height:"100%",width:`${pct}%`,background:`linear-gradient(90deg,${mo.c},${mo.c}88)`,
+                  borderRadius:4,transition:"width 0.8s cubic-bezier(.22,1,.36,1)",
+                  boxShadow:`0 0 8px ${mo.c}66`}} />
               </div>
-              <span style={{color:mo.c,fontSize:12,fontWeight:700}}>{done}/{quests.length}</span>
+              <span style={{color:mo.c,fontSize:13,fontWeight:800,minWidth:36}}>{done}/{quests.length}</span>
+              {pct===100&&<span style={{fontSize:16,animation:"spin 0.5s ease-out"}}>🏆</span>}
             </div>
           </div>
         </div>
-        {[{label:"Misiones Diarias",items:dailies,icon:"📋"},{label:"Mini Quests",items:minis,icon:"⚡"},{label:"Boss Fights",items:bosses,icon:"🐉"}].map(group=>group.items.length>0&&(
-          <div key={group.label} style={{marginBottom:20}}>
-            <p style={{color:"#5a5a78",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{group.icon} {group.label}</p>
-            <div style={{display:"flex",flexDirection:"column",gap:6}}>
-              {group.items.map(q=>{
-                const isDone = state.done.includes(q.id);
+        {/* Grupos de quests con stagger */}
+        {[{label:"Misiones Diarias",items:dailies,icon:"📋",offset:0},{label:"Mini Quests",items:minis,icon:"⚡",offset:dailies.length},{label:"Boss Fights",items:bosses,icon:"🐉",offset:dailies.length+minis.length}].map(group=>group.items.length>0&&(
+          <div key={group.label} style={{marginBottom:22}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:8,paddingBottom:6,borderBottom:`1px solid ${mo.c}22`}}>
+              <span style={{fontSize:14}}>{group.icon}</span>
+              <p style={{color:"#6a6a88",fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",margin:0}}>{group.label}</p>
+              <span style={{marginLeft:"auto",color:mo.c,fontSize:11,fontWeight:700}}>
+                {group.items.filter(q=>state.done.includes(q.id)).length}/{group.items.length}
+              </span>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:5}}>
+              {group.items.map((q,qi)=>{
+                const isDoneQ = state.done.includes(q.id);
                 const sk = SKI[q.s];
+                const isBoss = q.tp===1;
+                const isHov = hovered===q.id;
                 return (
                   <div key={q.id} onClick={()=>onSelectQuest(q)}
-                    style={{background:isDone?"rgba(16,185,129,0.06)":"rgba(255,255,255,0.03)",border:`1px solid ${isDone?"#10b98122":q.tp===1?"#f59e0b22":"#ffffff0a"}`,borderRadius:10,padding:"12px 16px",cursor:"pointer",transition:"all 0.15s"}}>
+                    onMouseEnter={()=>setHovered(q.id)}
+                    onMouseLeave={()=>setHovered(null)}
+                    style={{background:isDoneQ?"rgba(16,185,129,0.06)":isHov?"rgba(255,255,255,0.06)":isBoss?"rgba(239,68,68,0.04)":"rgba(255,255,255,0.02)",
+                      border:`1px solid ${isDoneQ?"#10b98133":isHov?mo.c+"66":isBoss?"#ef444433":"#ffffff08"}`,
+                      borderRadius:10,padding:"11px 14px",cursor:"pointer",
+                      transition:"all 0.18s",
+                      transform:isHov&&!isDoneQ?"translateX(4px)":"translateX(0)",
+                      boxShadow:isHov&&!isDoneQ?`0 4px 16px ${mo.c}18`:isBoss?`0 0 12px #ef444418`:"none",
+                      animation:`questIn 0.35s ${(group.offset+qi)*0.04}s both cubic-bezier(.22,1,.36,1)`}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                       <div style={{display:"flex",gap:10,alignItems:"center",flex:1,minWidth:0}}>
-                        <span style={{fontSize:16}}>{isDone?"✅":q.tp===1?"🐉":q.tp===2?"⚡":"📋"}</span>
+                        <span style={{fontSize:isDoneQ?16:isBoss?20:15,
+                          filter:isBoss&&!isDoneQ?"drop-shadow(0 0 4px #ef4444)":"none",
+                          animation:isBoss&&!isDoneQ?"bossHover 2s ease-in-out infinite":"none"}}>
+                          {isDoneQ?"✅":isBoss?"🐉":q.tp===2?"⚡":"📋"}
+                        </span>
                         <div style={{minWidth:0}}>
-                          <p style={{color:isDone?"#10b981":"#e0e0e8",fontSize:13,fontWeight:600,margin:0,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{q.t}</p>
-                          <p style={{color:"#4a4a68",fontSize:11,margin:"2px 0 0"}}>{q.a}</p>
+                          <p style={{color:isDoneQ?"#10b981":isBoss?"#ef9090":"#e0e0e8",
+                            fontSize:13,fontWeight:isBoss?700:600,margin:0,
+                            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{q.t}</p>
+                          <p style={{color:"#3a3a58",fontSize:11,margin:"2px 0 0",
+                            overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{q.a}</p>
                         </div>
                       </div>
-                      <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-                        <span style={{background:`${sk.c}18`,color:sk.c,fontSize:10,padding:"2px 6px",borderRadius:3,fontWeight:600}}>{sk.i}</span>
-                        <span style={{color:"#f59e0b",fontSize:12,fontWeight:700}}>+{q.x}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:6,flexShrink:0,marginLeft:8}}>
+                        <span style={{background:`${sk.c}14`,color:sk.c,fontSize:10,padding:"2px 6px",borderRadius:20,fontWeight:600}}>{sk.i}</span>
+                        <span style={{color:isBoss?"#ef4444":"#f59e0b",fontSize:12,fontWeight:800}}>+{q.x}</span>
+                        {isHov&&!isDoneQ&&<span style={{color:mo.c,fontSize:11}}>→</span>}
                       </div>
                     </div>
                   </div>
@@ -375,11 +472,6 @@ function ZoneView({month,state,onSelectQuest,onBack}) {
           </div>
         ))}
       </div>
-      <style>{`
-        @keyframes float0{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-        @keyframes float1{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-14px) rotate(5deg)}}
-        @keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-      `}</style>
     </div>
   );
 }
@@ -643,8 +735,26 @@ export default function GCPQuestRPG() {
         @keyframes idle{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
         @keyframes walk{0%{transform:translateX(-2px)}50%{transform:translateX(2px)}100%{transform:translateX(-2px)}}
         @keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:0.8}}
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes float0{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+        @keyframes float1{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-16px) rotate(6deg)}}
+        @keyframes float2{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+        @keyframes resultIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes barFill{from{width:0}}
+        @keyframes pulse{0%,100%{opacity:0.7}50%{opacity:1}}
+        @keyframes bossFlash{0%{opacity:1}100%{opacity:0}}
+        @keyframes bossEntry{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+        @keyframes bossHover{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.08)}}
+        @keyframes phaseActive{0%,100%{box-shadow:0 0 12px var(--pc,#3d5afe22)}50%{box-shadow:0 0 24px var(--pc,#3d5afe44)}}
+        @keyframes phaseLine{0%,100%{opacity:0.6;width:40%}50%{opacity:1;width:100%}}
+        @keyframes questIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes iconBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes completeBounce{0%{transform:scale(0.8);opacity:0}70%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+        @keyframes btnPulse{0%,100%{box-shadow:0 6px 24px rgba(61,90,254,0.3)}50%{box-shadow:0 8px 32px rgba(61,90,254,0.55)}}
         *{box-sizing:border-box;margin:0}
         body{margin:0;overflow-x:hidden}
+        button:active{transform:scale(0.97)!important;transition:transform 0.1s!important}
         ::-webkit-scrollbar{width:5px;height:5px}
         ::-webkit-scrollbar-track{background:#0a0a14}
         ::-webkit-scrollbar-thumb{background:#2a2a40;border-radius:3px}
